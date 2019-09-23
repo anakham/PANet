@@ -121,8 +121,9 @@ class Generalized_RCNN(nn.Module):
             self.Keypoint_Outs = keypoint_rcnn_heads.keypoint_outputs(self.Keypoint_Head.dim_out)
 
         # DANN
-        if cfg.DANN.NUM_DATASETS > 1 and cfg.DANN.GAMMA > 0:
-            self.DANN = dann.Dann_Head(self.Conv_Body.dim_out, cfg.DANN.NUM_DATASETS, cfg.DANN.GAMMA)
+        if cfg.DANN.USE_DANN:
+            assert cfg.DANN.NUM_DATASETS > 1, 'DANN can be used only on more then 1 dataset'
+            self.DANN = dann.Dann_Head(self.Conv_Body.dim_out, cfg)
         else:
             self.DANN = None
 

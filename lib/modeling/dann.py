@@ -25,10 +25,11 @@ class ReverseLayerF(Function):
         return output, None
 
 class Dann_Head(nn.Module):
-    def __init__(self, input_dim, domains_count, gamma, top_layers_count = 4):
+    def __init__(self, input_dim, cfg, top_layers_count = 4):
         super(Dann_Head, self).__init__()
         self.progress = nn.Parameter(torch.Tensor([0,]), requires_grad = False) # must be updated from outside
-        self.gamma = gamma
+        self.gamma = cfg.DANN.GAMMA
+        self.lambda_max = cfg.DANN.LAMBDA_MAX
         self.map_size = 8
         self.top_layers_count = top_layers_count
         self.domain_classifier = nn.Sequential()
@@ -37,7 +38,7 @@ class Dann_Head(nn.Module):
         #self.domain_classifier.add_module('dann_bn1', nn.BatchNorm1d(100)) # - dows not work for batch = 1
         self.domain_classifier.add_module('dann_bn1', nn.GroupNorm(5, 100)) # - dows not work for batch = 1
         self.domain_classifier.add_module('dann_relu1', nn.ReLU(True))
-        self.domain_classifier.add_module('dann_fc2', nn.Linear(100, domains_count))
+        self.domain_classifier.add_module('dann_fc2', nn.Linear(100, cfg.DANN.NUM_DATASETS))
         self.domain_classifier.add_module('dann_softmax', nn.LogSoftmax(dim=1))
         self.loss = nn.NLLLoss()
 
@@ -50,8 +51,8 @@ class Dann_Head(nn.Module):
     def forward(self, input_data, roidb):
         feature = torch.cat([nn.functional.adaptive_max_pool2d(data, self.map_size).flatten(start_dim=1)
                              for data in input_data[ -self.top_layers_count : ]], dim=1)
-        alpha = 2. / (1. + torch.exp(-self.gamma * self.progress.data)) - 1
-        reverse_feature = ReverseLayerF.apply(feature, alpha)
+        lambda_p = self.lambda_max * (2. / (1. + torch.exp(-self.gamma * self.progress.data)) - 1)
+        reverse_feature = ReverseLayerF.apply(feature, lambda_p)
         domain_output = self.domain_classifier(reverse_feature)
         target = torch.Tensor([rec['dataset_id'] for rec in roidb]).to(domain_output.device)
         loss = self.loss(domain_output, target.long())
