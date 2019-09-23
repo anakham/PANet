@@ -157,16 +157,26 @@ def main():
 
     logger.info("Cuda device count: %i", torch.cuda.device_count())
 
+    cfg.TRAIN.DATASETS = ()
     if args.dataset == "coco2017":
         cfg.TRAIN.DATASETS = ('coco_2017_train',)
         cfg.MODEL.NUM_CLASSES = 81
-    elif args.dataset == "keypoints_coco2017":
+    if args.dataset == "keypoints_coco2017":
         cfg.TRAIN.DATASETS = ('keypoints_coco_2017_train',)
         cfg.MODEL.NUM_CLASSES = 2
-    elif args.dataset == "cityscapes":
-        cfg.TRAIN.DATASETS = ('cityscapes_fine_instanceonly_seg_train',)
+    if "cityscapes" in args.dataset:
+        cfg.TRAIN.DATASETS += ('cityscapes_fine_instanceonly_seg_train',)
         cfg.MODEL.NUM_CLASSES = 9
-    else:
+    if "highwai" in args.dataset:
+        cfg.TRAIN.DATASETS += ('highwai_train',)
+        cfg.MODEL.NUM_CLASSES = 9
+    if "highwgan1" in args.dataset:
+        cfg.TRAIN.DATASETS += ('highwGan1_train',)
+        cfg.MODEL.NUM_CLASSES = 9
+    if "highwgan2" in args.dataset:
+        cfg.TRAIN.DATASETS += ('highwGan2_train',)
+        cfg.MODEL.NUM_CLASSES = 9
+    if len(cfg.TRAIN.DATASETS) == 0:
         raise ValueError("Unexpected args.dataset: {}".format(args.dataset))
 
     cfg_from_file(args.cfg_file)
@@ -214,7 +224,6 @@ def main():
         cfg.SOLVER.BASE_LR = args.lr
     if args.lr_decay_gamma is not None:
         cfg.SOLVER.GAMMA = args.lr_decay_gamma
-    assert_and_infer_cfg()
 
     timers = defaultdict(Timer)
 
@@ -226,6 +235,8 @@ def main():
     roidb_size = len(roidb)
     logger.info('{:d} roidb entries'.format(roidb_size))
     logger.info('Takes %.2f sec(s) to construct roidb', timers['roidb'].average_time)
+
+    assert_and_infer_cfg()
 
     # Effective training sample size for one epoch
     train_size = roidb_size // args.batch_size * args.batch_size
@@ -427,9 +438,15 @@ def main():
                     if key != 'roidb': # roidb is a list of ndarrays with inconsistent length
                         input_data[key] = list(map(Variable, input_data[key]))
 
+                if maskRCNN.module.DANN is not None:
+                    maskRCNN.module.DANN.progress.data = torch.Tensor([step/cfg.SOLVER.MAX_ITER,]).cuda()
                 net_outputs = maskRCNN(**input_data)
                 training_stats.UpdateIterStats(net_outputs, inner_iter)
-                loss = net_outputs['total_loss']
+                loss = 0
+                if not (cfg.DANN.USE_DANN and cfg.DANN.DANN_ONLY):
+                    loss += net_outputs['total_loss']
+                if cfg.DANN.USE_DANN:
+                    loss += net_outputs['loss_DANN']
                 loss.backward()
             optimizer.step()
             training_stats.IterToc()

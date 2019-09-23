@@ -92,6 +92,13 @@ class TrainingStats(object):
                     loss_rpn_bbox_data += loss_data
             self.smoothed_losses[k].AddValue(loss_data)
 
+        if 'loss_DANN' in model_out:
+            loss = model_out['loss_DANN']
+            assert loss.shape[0] == cfg.NUM_GPUS
+            loss = loss.mean(dim=0, keepdim=True)
+            model_out['loss_DANN'] = loss
+            self.smoothed_losses['loss_DANN'].AddValue(loss.item())
+
         model_out['total_loss'] = total_loss  # Add the total loss for back propagation
         self.smoothed_total_loss.AddValue(total_loss.item())
         if cfg.FPN.FPN_ON:
@@ -138,6 +145,13 @@ class TrainingStats(object):
             if inner_iter == (self.misc_args.iter_size - 1):
                 loss_data = self._mean_and_reset_inner_list('inner_losses', k)
                 self.smoothed_losses[k].AddValue(loss_data)
+
+        if 'loss_DANN' in model_out:
+            loss = model_out['loss_DANN']
+            assert loss.shape[0] == cfg.NUM_GPUS
+            loss = loss.mean(dim=0, keepdim=True)
+            model_out['loss_DANN'] = loss
+            self.smoothed_losses['loss_DANN'].AddValue(loss.item())
 
         model_out['total_loss'] = total_loss  # Add the total loss for back propagation
         total_loss_data = total_loss.data[0]

@@ -101,8 +101,15 @@ if __name__ == '__main__':
     elif args.dataset == "cityscapes":
         cfg.TEST.DATASETS = ('cityscapes_fine_instanceonly_seg_val',)
         cfg.MODEL.NUM_CLASSES = 9
+    elif args.dataset == "cityscapes_test":
+        cfg.TEST.DATASETS = ('cityscapes_fine_instanceonly_seg_test',)
+        cfg.MODEL.NUM_CLASSES = 9
+    elif args.dataset == "highwai":
+        cfg.TEST.DATASETS = ('highwai_val',)
+        cfg.MODEL.NUM_CLASSES = 9
     else:  # For subprocess call
         assert cfg.TEST.DATASETS, 'cfg.TEST.DATASETS shouldn\'t be empty'
+    cfg.DANN.USE_DANN = False # no need it in a test
     assert_and_infer_cfg()
 
     with open(os.path.join(args.output_dir, "config_and_args.txt"), "w") as f:

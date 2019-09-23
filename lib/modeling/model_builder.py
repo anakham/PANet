@@ -13,6 +13,7 @@ import modeling.rpn_heads as rpn_heads
 import modeling.fast_rcnn_heads as fast_rcnn_heads
 import modeling.mask_rcnn_heads as mask_rcnn_heads
 import modeling.keypoint_rcnn_heads as keypoint_rcnn_heads
+import modeling.dann as dann
 import utils.blob as blob_utils
 import utils.net as net_utils
 import utils.resnet_weights_helper as resnet_utils
@@ -118,6 +119,13 @@ class Generalized_RCNN(nn.Module):
             if getattr(self.Keypoint_Head, 'SHARE_RES5', False):
                 self.Keypoint_Head.share_res5_module(self.Box_Head.res5)
             self.Keypoint_Outs = keypoint_rcnn_heads.keypoint_outputs(self.Keypoint_Head.dim_out)
+
+        # DANN
+        if cfg.DANN.USE_DANN:
+            assert cfg.DANN.NUM_DATASETS > 1, 'DANN can be used only on more then 1 dataset'
+            self.DANN = dann.Dann_Head(self.Conv_Body.dim_out, cfg)
+        else:
+            self.DANN = None
 
         self._init_modules()
 
@@ -232,6 +240,9 @@ class Generalized_RCNN(nn.Module):
                         kps_pred, rpn_ret['keypoint_locations_int32'], rpn_ret['keypoint_weights'],
                         rpn_ret['keypoint_loss_normalizer'])
                 return_dict['losses']['loss_kps'] = loss_keypoints
+
+            if self.DANN is not None:
+                return_dict['loss_DANN'] = self.DANN(blob_conv, roidb).unsqueeze(0)
 
             # pytorch0.4 bug on gathering scalar(0-dim) tensors
             for k, v in return_dict['losses'].items():

@@ -52,6 +52,13 @@ def combined_roidb_for_training(dataset_names, proposal_files):
         logger.info('Loaded dataset: {:s}'.format(ds.name))
         return roidb
 
+    def add_dataset_id(roidbs):
+        for i, roidb in enumerate(roidbs):
+            for entry in roidb:
+                assert 'dataset_id' not in entry.keys()
+                entry['dataset_id'] = i
+        cfg.DANN.NUM_DATASETS = len(roidbs)
+
     if isinstance(dataset_names, six.string_types):
         dataset_names = (dataset_names, )
     if isinstance(proposal_files, six.string_types):
@@ -60,6 +67,7 @@ def combined_roidb_for_training(dataset_names, proposal_files):
         proposal_files = (None, ) * len(dataset_names)
     assert len(dataset_names) == len(proposal_files)
     roidbs = [get_roidb(*args) for args in zip(dataset_names, proposal_files)]
+    add_dataset_id(roidbs)
     roidb = roidbs[0]
     for r in roidbs[1:]:
         roidb.extend(r)

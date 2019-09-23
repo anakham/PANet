@@ -84,17 +84,17 @@ def convert_cityscapes_instance_only(
     """Convert from cityscapes format to COCO instance seg format - polygons"""
     sets = [
         'gtFine_val',
-        # 'gtFine_train',
-        # 'gtFine_test',
+        'gtFine_train',
+        'gtFine_test',
 
         # 'gtCoarse_train',
         # 'gtCoarse_val',
         # 'gtCoarse_train_extra'
     ]
     ann_dirs = [
-        'raw/gtFine_trainvaltest/gtFine/val',
-        # 'gtFine_trainvaltest/gtFine/train',
-        #'raw/gtFine_trainvaltest/gtFine/test',
+        'raw/gtFine/val',
+        'raw/gtFine/train',
+        'raw/gtFine/test',
 
         # 'gtCoarse/train',
         # 'gtCoarse/train_extra',
