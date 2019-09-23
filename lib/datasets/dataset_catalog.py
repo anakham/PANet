@@ -82,6 +82,38 @@ def get_datasets_dict():
         RAW_DIR:
             _DATA_DIR + '/cityscapes/raw'
     },
+    'highwai_train': {
+        IM_DIR:
+            _DATA_DIR + '/HighWai/raw/gen_IntersectionWithPedestrians/dataset/images',
+        ANN_FN:
+            _DATA_DIR + '/HighWai/gen_IntersectionWithPedestrians_train.json',
+        RAW_DIR:
+            _DATA_DIR + '/HighWai/raw'
+    },
+    'highwGan1_train': {
+        IM_DIR:
+            _DATA_DIR + '/HighWai/gan1',
+        ANN_FN:
+            _DATA_DIR + '/HighWai/gen_IntersectionWithPedestrians_train.json',
+        RAW_DIR:
+            _DATA_DIR + '/HighWai/raw'
+    },
+    'highwGan2_train': {
+        IM_DIR:
+            _DATA_DIR + '/HighWai/gan2',
+        ANN_FN:
+            _DATA_DIR + '/HighWai/gen_IntersectionWithPedestrians_train.json',
+        RAW_DIR:
+            _DATA_DIR + '/HighWai/raw'
+    },
+    'highwai_val': {
+        IM_DIR:
+            _DATA_DIR + '/HighWai/raw/gen_RandomTrafficScenario/dataset/images',
+        ANN_FN:
+            _DATA_DIR + '/HighWai/gen_RandomTrafficScenario_val.json',
+        RAW_DIR:
+            _DATA_DIR + '/HighWai/raw'
+    },
     'coco_2014_train': {
         IM_DIR:
             _DATA_DIR + '/coco/images/train2014',

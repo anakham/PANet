@@ -905,6 +905,18 @@ __C.RESNETS.USE_GN = False
 
 
 # ---------------------------------------------------------------------------- #
+# DANN options (Domain-Adversarial Training of Neural Networks (DANN): arxiv 1505.07818, 1409.7495)
+# ---------------------------------------------------------------------------- #
+__C.DANN = AttrDict()
+
+# Number of datasets (i.e. domains)
+__C.DANN.NUM_DATASETS = 1
+
+# \gamma in (14) in https://arxiv.org/pdf/1409.7495.pdf
+__C.DANN.GAMMA = 10
+
+
+# ---------------------------------------------------------------------------- #
 # GroupNorm options
 # ---------------------------------------------------------------------------- #
 __C.GROUP_NORM = AttrDict()
