@@ -23,4 +23,4 @@ sh make.sh
 See the [original README](https://github.com/ShuLiu1993/PANet/blob/master/README.md)
 for more details about installation and usage.
 
-See **<TODO: link to the whole description>** for the whole experiment description.
+See [the whole experiment description](./README-Mindtech.md) for results.
