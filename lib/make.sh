@@ -5,11 +5,15 @@ cd "$SELF_DIR"
 
 #rm -rf build  #remove build folder for clean build
 mkdir -p build
-NEWER_SOURCES=`cp -rv --update model/csrc build/csrc`
+NEWER_SOURCES=`cp -rv --update model/csrc build`
 echo "${NEWER_SOURCES}"
 HIP_DIR=/opt/rocm/hip
 if [ -d "$HIP_DIR" ]; then
 	if [ ! -z "${NEWER_SOURCES}" ]; then
+		#changed files need to be hipify-ed again
+		#re-hipify all, for simplicity dealing with .cu.prehip versions
+		rm -rf build/csrc/cuda/*.cu*
+		cp -r --update model/csrc build
 		$HIP_DIR/bin/hipify-perl --inplace --print-stats build/csrc/cuda/*.cu
 
 		#torch-specific replacements for hip
@@ -17,7 +21,6 @@ if [ -d "$HIP_DIR" ]; then
 		sed -i 's!THC/THC!THH/THH!g' build/csrc/cuda/*.cu
 		sed -i 's!getCurrentCUDAStream!getCurrentHIPStream!g' build/csrc/cuda/*.cu
 	fi
-
 	export HIP_DIR
 else
 	export CUDA_PATH=/usr/local/cuda/
